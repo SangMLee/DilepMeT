@@ -14,11 +14,15 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
   
   Manager()->AddCut("le 2");
   Manager()->AddCut("l*l < 0");
-  Manager()->AddCut("dimu pt cut");
-  Manager()->AddCut("d pt cut");
+  Manager()->AddCut("diel pt cut");
+  Manager()->AddCut("dilep mass");
   Manager()->AddCut("dilep pt > 60");
-  Manager()->AddCut("many jet");
-  Manager()->AddCut("b-jet veto");
+  Manager()->AddCut("jet veto");
+  Manager()->AddCut("B-tagged Jet Veto");
+  Manager()->AddCut("Met Cut");
+  Manager()->AddCut("Dphi");
+  Manager()->AddCut("Met Pt");
+  Manager()->AddCut("dr(ll) < 1.8");
   Manager()->AddCut("tau veto");
   Manager()->AddCut("mu > 5");
 
@@ -59,7 +63,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     cout << "---------------NEW EVENT-------------------" << endl;
    
     //Containers
-    vector<const RecJetFormat*>selectJets,selectBJets;
+    vector<const RecJetFormat*>vetoJets,vetoBJets;
     vector<const RecLeptonFormat*>selectMu,selectElec,vetoMu,vetoElec;
     vector<const RecTauFormat*>vetoTau;
     // Looking through the reconstructed electron collection
@@ -100,7 +104,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
       double pt = tau.pt();
       double eta = fabs(tau.eta());
 
-      if ((pt > 18) && (eta < 2.3))
+      if ((pt > 18.) && (eta < 2.3))
           vetoTau.push_back(&tau);
     }
 
@@ -108,21 +112,15 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     for (unsigned int i=0;i<event.rec()->jets().size();i++)
     {
       const RecJetFormat& jet = event.rec()->jets()[i];
-      if (jet.pt() < 20) continue;
-      if (fabs(jet.eta()) > 2.4) continue; 
-      cout << "----------------------------------" << endl;
-      cout << "Jet" << endl;
-      cout << "----------------------------------" << endl;
-      cout << "jet: index=" << i+1 
-           << " charge=" << jet.charge() << endl;
-      cout << "px=" << jet.px()
-           << " py=" << jet.py()
-           << " pz=" << jet.pz()
-           << " e="  << jet.e()
-           << " m="  << jet.m() << endl;
-      cout << "pt=" << jet.pt() 
-           << " eta=" << jet.eta() 
-           << " phi=" << jet.phi() << endl;
+      double pt = jet.pt();
+      double eta = fabs(jet.eta()); 
+
+      if ((pt > 30.) && (eta < 5))
+        vetoJets.push_back(&jet); 
+      if (jet.btag()){
+          if ((pt > 20.) && (eta < 2.4))
+            vetoBJets.push_back(&jet);
+      }
       cout << "b-tag=" << jet.btag()
            << " true b-tag (before eventual efficiency)=" 
            << jet.true_btag() << endl;
@@ -130,29 +128,14 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
            << " ntracks=" << jet.ntracks() << endl;
       cout << endl;
     }
+    
+    //MET 
+    MALorentzVector pTmiss = event.rec()->MET().momentum();
+    double MET = pTmiss.Pt();
 
     // Sorting Muons and Electrons in Pt order 
     SORTER->sort(selectElec, PTordering);
     SORTER->sort(selectMu, PTordering);
-  //  cout << "No. electons" << selectElec.size()<<endl;
-  //  bool multiel;
-  //  bool multimu;
-  //  if (selectElec.size() >= 2)
-  //      multiel = true;
-  //  else 
-  //      multiel = false; 
-  //
-  //  if (selectMu.size() >= 2)
-  //      multimu = true;
-  //      
-  //  else
-  //      multimu = false; 
-  //  cout <<"Multiel: " << multiel << endl;
-  //  cout <<"Multimu: " << multimu << endl;
-  //
-  //  cout << "No. muons" << selectMu.size() << endl;
-   // if (!Manager()->ApplyCut(multiel|| multimu,"le 2")) return true;
-
     // Multiple Muon 
     bool isElec;
     if (!Manager()->ApplyCut((selectElec.size() >= 2) || (selectMu.size() >= 2),"le 2")) return true;
@@ -160,55 +143,48 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
         isElec = true;
     else
         isElec = false;  
-    cout << "pass" << endl;
-    cout << "is electron" << isElec << endl;
-    //Charge cut  
-    for ( auto& el : selectElec) {
-        cout << "electron pt:  " << el->pt() ;
-        cout << "electron charge:  " << el->charge() << endl;
-    }
-    for ( auto& el : event.rec()->electrons()){
-        cout << "rec elec pt:  " << el.pt() << "  rec elec charge:  "<< el.charge()<<endl;
-    }
     
+    // Opposite Charge
     const RecLeptonFormat &lep1 = isElec ? *selectElec[0] : *selectMu[0];
     const RecLeptonFormat &lep2 = isElec ? *selectElec[1] : *selectMu[1];
-    cout << "selected electron 1 pt:  " << lep1.pt() << "  selec elect charge 1:  " << lep1.charge()<<endl; 
-    cout << "selected electron 2 pt:  " << lep2.pt() << "  selec elect charge 2:  " << lep2.charge()<<endl; 
-    //const RecLeptonFormat &elec1 = selectElec[0], &elec2 = selectElec[1];
-    //const RecLeptonFormat &mu1 = selectMu[0], &mu2 = selectMu[1];
-    if (!Manager()->ApplyCut(lep1.charge()*lep2.charge() < 0., "l*l < 0")) return true; 
-
-    if(!Manager()->ApplyCut(lep1.pt() > 25. && lep2.pt() > 20., "  ")) return true; 
-    //Leading lepton pt cut
-   // if (selectElec[0].pt() < 25) return false;
-   // if (selectMu[0].pt() < 20) return false;
-
-   // const RecLeptonFormat &mu1 = selectMu[0], &mu2 = selectMu[1];
-   // if (mu1.charge()*mu2.charge() > 0) return false;
+    if (!Manager()->ApplyCut(lep1.charge()*lep2.charge() < 0., "l*l < 0")) return true;
     
-   // MALorentzVector pTmiss = event.rec()->MET().momentum();
-   // double MET = pTmiss.Pt();
-    // Transverse missing energy (MET)
-    cout << "MET pt=" << event.rec()->MET().pt()
-         << " phi=" << event.rec()->MET().phi() << endl;
-    cout << endl;
-   // if (MET <= 100){
-      //  return false;
-   // }
-    // Transverse missing hadronic energy (MHT)
-    cout << "MHT pt=" << event.rec()->MHT().pt()
-              << " phi=" << event.rec()->MHT().phi() << endl;
-    cout << endl;
+    // Leading elec 
+    if (isElec){
+        if(!Manager()->ApplyCut(lep1.pt() > 25. && lep2.pt() > 20., "diel pt cut")) return true;
+    }
 
-    // Total transverse energy (TET)
-    cout << "TET=" << event.rec()->TET() << endl;
-    cout << endl;
+    // Dilep Cuts 
+    auto dilep = lep1 + lep2;
+    if (!Manager()->ApplyCut(fabs(dilep.m() - 91.1876) < 15.,"dilep mass")) return true; 
+    
+    if (!Manager()->ApplyCut(dilep.pt() > 60., "dilep pt > 60")) return true;            
+    
+    // Jet Veto
+    if (!Manager()->ApplyCut(vetoJets.size() <= 1,"jet veto")) return true;
+    
+    // B-Jet Veto 
+    if (!Manager()->ApplyCut(vetoBJets.size() == 0.,"B-tagged Jet Veto")) return true;
+    
+    //MET Cuts
+    if (!Manager()->ApplyCut(MET > 100.,"Met Cut")) return true;
 
-    // Total transverse hadronic energy (THT)
-    cout << "THT=" << event.rec()->THT() << endl;
-    cout << endl;
-    myEvent ++; 
+    //Delta phi cut 
+    auto DiPTphi = dilep.dphi_0_pi(pTmiss);
+    if (!Manager()->ApplyCut(DiPTphi > 2.6,"Dphi")) return true;
+    
+    //Met - dilep.Pt 
+    if (!Manager()->ApplyCut(fabs((MET - dilep.pt())/ dilep.pt()) < 0.4,"Met Pt")) return true;
+    
+    //Single jet
+    auto jetPT = vetoJets[0];
+    auto Jetphi = jetPT->dphi_0_pi(pTmiss);
+    auto DRll = lep1.dr(lep2) ;
+    if (vetoJets.size() == 1){
+        if (!Manager()->ApplyCut(Jetphi > 0.5,"Jet Met")) return true;
+        if (!Manager()->ApplyCut(DRll < 1.8, "dR(ll) < 1.8")) return true;
+    }
+
   }
   
   return true;
