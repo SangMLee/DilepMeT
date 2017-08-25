@@ -22,10 +22,8 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
   Manager()->AddCut("Met Cut");
   Manager()->AddCut("Dphi");
   Manager()->AddCut("Met Pt");
-  Manager()->AddCut("dr(ll) < 1.8");
-  Manager()->AddCut("tau veto");
-  Manager()->AddCut("mu > 5");
-
+  Manager()->AddCut("Jet Met");
+  Manager()->AddCut("dR(ll) < 1.8");
   cout << "END   Initialization" << endl;
   return true;
 }
@@ -60,8 +58,6 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
 
   if (event.rec()!=0)
   {
-    cout << "---------------NEW EVENT-------------------" << endl;
-   
     //Containers
     vector<const RecJetFormat*>vetoJets,vetoBJets;
     vector<const RecLeptonFormat*>selectMu,selectElec,vetoMu,vetoElec;
@@ -121,15 +117,9 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
           if ((pt > 20.) && (eta < 2.4))
             vetoBJets.push_back(&jet);
       }
-      cout << "b-tag=" << jet.btag()
-           << " true b-tag (before eventual efficiency)=" 
-           << jet.true_btag() << endl;
-      cout << "EE/HE=" << jet.EEoverHE()
-           << " ntracks=" << jet.ntracks() << endl;
-      cout << endl;
     }
     
-    //MET 
+    // MET 
     MALorentzVector pTmiss = event.rec()->MET().momentum();
     double MET = pTmiss.Pt();
 
@@ -143,7 +133,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
         isElec = true;
     else
         isElec = false;  
-    
+
     // Opposite Charge
     const RecLeptonFormat &lep1 = isElec ? *selectElec[0] : *selectMu[0];
     const RecLeptonFormat &lep2 = isElec ? *selectElec[1] : *selectMu[1];
@@ -151,7 +141,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     
     // Leading elec 
     if (isElec){
-        if(!Manager()->ApplyCut(lep1.pt() > 25. && lep2.pt() > 20., "diel pt cut")) return true;
+       if(!Manager()->ApplyCut(lep1.pt() > 25. && lep2.pt() > 20., "diel pt cut")) return true;
     }
 
     // Dilep Cuts 
@@ -167,7 +157,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     if (!Manager()->ApplyCut(vetoBJets.size() == 0.,"B-tagged Jet Veto")) return true;
     
     //MET Cuts
-    if (!Manager()->ApplyCut(MET > 100.,"Met Cut")) return true;
+   if (!Manager()->ApplyCut(MET > 100.,"Met Cut")) return true;
 
     //Delta phi cut 
     auto DiPTphi = dilep.dphi_0_pi(pTmiss);
@@ -176,15 +166,15 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     //Met - dilep.Pt 
     if (!Manager()->ApplyCut(fabs((MET - dilep.pt())/ dilep.pt()) < 0.4,"Met Pt")) return true;
     
-    //Single jet
-    auto jetPT = vetoJets[0];
-    auto Jetphi = jetPT->dphi_0_pi(pTmiss);
-    auto DRll = lep1.dr(lep2) ;
+   //Single jet
     if (vetoJets.size() == 1){
+        auto jetPT = vetoJets[0];
+        auto Jetphi = jetPT->dphi_0_pi(pTmiss);
+        auto DRll = lep1.dr(lep2) ;
         if (!Manager()->ApplyCut(Jetphi > 0.5,"Jet Met")) return true;
         if (!Manager()->ApplyCut(DRll < 1.8, "dR(ll) < 1.8")) return true;
     }
-
+    myEvent ++;
   }
   
   return true;
