@@ -1,0 +1,153 @@
+\documentclass[12pt,A4paper]{article}
+%\pdfoutput=1
+
+\usepackage{multirow}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{slashed}
+\usepackage{graphicx}
+    \usepackage{amsmath}
+    \usepackage{caption}
+    \usepackage{subcaption}
+    \usepackage{cancel}
+    \usepackage{etoolbox} % provides \patchcmd macro
+    \makeatletter % modify the "headings" page style
+    \patchcmd{\ps@headings}{{\slshape
+ightmark}\hfil	hepage}{	hepage\hfil}{}{}
+    \makeatother
+    \pagestyle{headings}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{appendix}
+
+\textwidth 170mm
+\textheight 220mm
+\oddsidemargin -5mm
+\evensidemargin 5mm
+\topmargin -16pt
+
+\newcommand{\colspacea}{\hphantom{33333333}}
+\newcommand{\colspaceb}{\hphantom{33333333}}
+\newcommand{\colspacec}{\hphantom{33333333}}
+\newcommand{\colspace}{\hphantom{33333333333}}
+
+
+\newcommand{\xspace}{~}
+\newcommand{\GeV}{\ensuremath{\,\text{Ge\hspace{-.08em}V}}\xspace}
+\newcommand{\met}{\ensuremath{E_{T}^\mathrm{miss}}\xspace}
+\newcommand{\PSGczDo}{\ensuremath{\widetilde{\chi}^{0}_{1}}\xspace} % neutralino
+\newcommand{\Pp}{\ensuremath{p}}
+\newcommand{\PSg}{\ensuremath{\widetilde{g}}}
+\newcommand{\PQq}{\ensuremath{q}}
+\newcommand{\cPqt}{\ensuremath{t}}
+\newcommand{\cPq}{\ensuremath{q}}
+\newcommand{\cPqb}{\ensuremath{b}}
+\newcommand{\PAQq}{\overline{\ensuremath{q}}}
+\newcommand{\cPaqt}{\overline{\ensuremath{t}}}
+\newcommand{\cPaqb}{\overline{\ensuremath{b}}}
+\newcommand{\PSQ}{\ensuremath{\widetilde{q}}}
+\newcommand{\PSGcz}{\ensuremath{\widetilde{\chi_0^1}}}
+\newcommand{\qqbar}{\ensuremath{\PQq\PAQq}\xspace}
+%\newcommand{\mgluino}{\ensuremath{m_{\PSg}}\xspace}
+\newcommand{\HT}{\ensuremath{H_{\mathrm T}}\xspace}
+\newcommand{\MHT}{\ensuremath{H_{\mathrm T}^{\text{miss}}}\xspace}
+\newcommand{\njets}{\ensuremath{N_{\text{jet}}}~}
+\newcommand{\nbjets}{\ensuremath{N_{\text{b-jet}}}~}
+\newcommand{\mgluino}{\ensuremath{m_{\PSg}}\xspace}
+\newcommand{\msquark}{\ensuremath{m_{\PSQ}}\xspace}
+%\newcommand{\mlsp}{\ensuremath{m_{{\PSGcz}_1}}\xspace}
+\newcommand{\tbbar}{\ensuremath{\cPqt\cPaqb}\xspace} % t-bbar
+\newcommand{\ttbar}{\ensuremath{t\overline{t}}\xspace} % t-tbar
+\newcommand{\bbbar}{\ensuremath{b\overline{b}}\xspace} % b-bbar
+\newcommand{\sTop}{\ensuremath{\widetilde{t}}\xspace}
+\newcommand{\sBot}{\ensuremath{\widetilde{b}}\xspace}
+\newcommand{\sQua}{\ensuremath{\widetilde{q}}\xspace}
+\newcommand{\PASQt}{\ensuremath{\overline{\widetilde{t}}}\xspace} % anti stop
+\newcommand{\PASQb}{\ensuremath{\overline{\widetilde{b}}}\xspace} % anti sbottom
+\newcommand{\PASQ}{\ensuremath{\overline{\widetilde{q}}}\xspace} % anti squark
+
+
+
+
+\newcommand{\neles}{\ensuremath{N_{\text{electron}}}\xspace}
+\newcommand{\nmuons}{\ensuremath{N_{\text{muon}}}\xspace}
+\newcommand{\nisomuons}{\ensuremath{N_{\text{isolated tracks}}^{\text{(muon)}}}\xspace}
+\newcommand{\nisoeles}{\ensuremath{N_{\text{isolated tracks}}^{\text{(electron)}}}\xspace}
+\newcommand{\nisohads}{\ensuremath{N_{\text{isolated tracks}}^{\text{(hadron)}}}\xspace}
+\newcommand{\dpmht}[1]{\ensuremath{\Delta\phi_{\MHT,j_{#1}}}\xspace}
+
+
+\newcommand{\mulobs}{$\sigma^{\mathrm{UL}}_{\mathrm{obs}}$}
+\newcommand{\ulobs}{\sigma^{\mathrm{UL}}_{\mathrm{obs}}}
+\newcommand{\mulexp}{$\sigma^{\mathrm{UL}}_{\mathrm{exp}}$}
+\newcommand{\ulexp}{\sigma^{\mathrm{UL}}_{\mathrm{exp}}}
+\newcommand{\mtheo}{$\sigma^{\mathrm{pred}}_{\mathrm{theo}}$}
+\newcommand{\theo}{\sigma_{\mathrm{pred}}^{\mathrm{theo}}}
+
+\newcommand{\lumi}{\mathcal{L}}
+\newcommand{\twomm}{\hspace{2mm}}
+\newcommand{\neu}{{\widetilde{\chi}_1^0}}
+
+\newcommand{\go}{{\widetilde{g}}}
+\newcommand{\sq}{{\widetilde{q}}}
+\newcommand{\mmsq}{$m_{\widetilde{q}}$}
+\newcommand{\msq}{m_{\widetilde{q}}}
+\newcommand{\mlsp}{m_{\widetilde{\chi}}}
+\newcommand{\mmlsp}{$m_{\widetilde{\chi}}$}
+\newcommand{\mgo}{m_{\widetilde{g}}}
+\newcommand{\mmgo}{$m_{\widetilde{g}}$}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{ %
+  language=C++,                % the language of the code
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  %  numbers=left,                   % where to put the line-numbers
+  %  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  %  stepnumber=2,                   % the step between two line-numbers. If it's 1, each line
+  % will be numbered
+  %  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+  % also try caption instead of title
+  keywordstyle=\color{blue},          % keyword style
+  commentstyle=\color{dkgreen},       % comment style
+  stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add a comment within your code
+  morekeywords={*,\dots}               % if you want to add more keywords to the set
+}
+
+
+\title{Validation of the \texttt{MadAnalysis 5} implementation of CMS-EXO-16-052}
+\author{Dajeong Jeon, Seulgi Kim, Daniel Lee, Ian J. Watson, Sam Bein, Jory Sonneveld \\
+\normalsize {\it email: ian.james.watson@cern.ch}
+\date{\today}
+}
+
+\begin{document}
+        \maketitle
+
+%\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%    Setup   %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Setup}
+In this document, the \texttt{MadAnalysis 5} implementation of the
+dilepton plus \met\ analysis of CMS at the LHC at
+$\sqrt{s}=13$ TeV
+\href{http://cms-results.web.cern.ch/cms-results/public-results/preliminary-results/EXO-16-052/}{CMS-EXO-16-052}
+(see also \href{http://arxiv.org/abs/XXXXX.XXXX}{arXiv:XXXXX.XXXX}) is
+validated.
+
+\end{document}
