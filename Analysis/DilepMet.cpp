@@ -19,11 +19,17 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
   Manager()->AddCut("dilep pt > 60");
   Manager()->AddCut("jet veto");
   Manager()->AddCut("B-tagged Jet Veto");
+  Manager()->AddCut("Elec Veto");
+  Manager()->AddCut("Mu Veto");
+  Manager()->AddCut("Tau Veto");
   Manager()->AddCut("Met Cut");
   Manager()->AddCut("Dphi");
   Manager()->AddCut("Met Pt");
   Manager()->AddCut("Jet Met");
   Manager()->AddCut("dR(ll) < 1.8");
+  
+  Manager()->AddHisto("Dilepton Pt",10,0,100, "Z -> l l");
+  Manager()->AddHisto("MET Drk M0",20,0,1000, "Z -> l l");
   cout << "END   Initialization" << endl;
   return true;
 }
@@ -70,11 +76,19 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     //  if pfIso 
       double pt = elec.pt();
       double eta = fabs(elec.eta());
-
-      if ((pt > 20) && (eta < 2.4))
+      double Riso = PHYSICS->Isol->eflow->relIsolation(elec,event.rec(),0.4,0.,IsolationEFlow::ALL_COMPONENTS);
+      if (eta < 1.48){ 
+        if ((pt > 20) && (eta < 2.4) && (Riso < 0.077))
           selectElec.push_back(&elec);
-      if (pt > 10)
+        if (pt > 10)
           vetoElec.push_back(&elec);
+      }
+      if (eta > 1.48){
+        if ((pt > 20) && (eta < 2.4) && (Riso < 0.068))
+          selectElec.push_back(&elec);
+        if (pt > 10)
+          vetoElec.push_back(&elec);
+      }
              
     }
 
@@ -86,8 +100,9 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
       //if (pfIso > 0.15) continue;
       double pt = mu.pt();
       double eta = fabs(mu.eta());
-      
-      if ((pt > 20) && (eta < 2.4)) 
+      double Riso = PHYSICS->Isol->eflow->relIsolation(mu,event.rec(),0.4,0.,IsolationEFlow::ALL_COMPONENTS);
+
+      if ((pt > 20) && (eta < 2.4) && (Riso < 0.15))
         selectMu.push_back(&mu);
       if (pt > 5) 
         vetoMu.push_back(&mu); 
@@ -156,6 +171,15 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     // B-Jet Veto 
     if (!Manager()->ApplyCut(vetoBJets.size() == 0.,"B-tagged Jet Veto")) return true;
     
+    //el > 3
+    if (!Manager()->ApplyCut(vetoElec.size() <= 2, "Elec Veto")) return true;
+    
+    //mu > 3
+    if (!Manager()->ApplyCut(vetoMu.size() <= 2, "Mu Veto")) return true; 
+
+    // Tau Veto 
+    if (!Manager()->ApplyCut(vetoTau.size() == 0.,"Tau Veto")) return true;
+
     //MET Cuts
    if (!Manager()->ApplyCut(MET > 100.,"Met Cut")) return true;
 
@@ -174,6 +198,8 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
         if (!Manager()->ApplyCut(Jetphi > 0.5,"Jet Met")) return true;
         if (!Manager()->ApplyCut(DRll < 1.8, "dR(ll) < 1.8")) return true;
     }
+    Manager()->FillHisto("Dilepton Pt",dilep.pt());
+    Manager()->FillHisto("MET Drk M0", MET);
     myEvent ++;
   }
   
