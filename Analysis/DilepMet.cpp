@@ -29,7 +29,7 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
   Manager()->AddCut("dR(ll) < 1.8");
   
   Manager()->AddHisto("Dilepton Pt",10,0,100, "Z -> l l");
-  Manager()->AddHisto("MET Drk M0",20,0,1000, "Z -> l l");
+  Manager()->AddHisto("MET Drk M1",20,0,1000, "Z -> l l");
   cout << "END   Initialization" << endl;
   return true;
 }
@@ -41,7 +41,9 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
 void DilepMet::Finalize(const SampleFormat& summary, const std::vector<SampleFormat>& files)
 {
   cout << "BEGIN Finalization" << endl;
-  cout << "Events Passed  :  " << myEvent << endl; 
+  cout << "Events Passed  :  " << myEvent << endl;
+  cout <<"No. Electrons  :  "<< myElec << endl;
+  cout <<"No. Mu  :  "<< myMu << endl;
   cout << "END   Finalization" << endl;
 }
 
@@ -141,6 +143,9 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     // Sorting Muons and Electrons in Pt order 
     SORTER->sort(selectElec, PTordering);
     SORTER->sort(selectMu, PTordering);
+
+
+
     // Multiple Muon 
     bool isElec;
     if (!Manager()->ApplyCut((selectElec.size() >= 2) || (selectMu.size() >= 2),"le 2")) return true;
@@ -199,7 +204,13 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
         if (!Manager()->ApplyCut(DRll < 1.8, "dR(ll) < 1.8")) return true;
     }
     Manager()->FillHisto("Dilepton Pt",dilep.pt());
-    Manager()->FillHisto("MET Drk M0", MET);
+    Manager()->FillHisto("MET Drk M1", MET);
+    if (isElec){
+        myElec ++;
+    }
+    else
+        myMu ++;
+
     myEvent ++;
   }
   

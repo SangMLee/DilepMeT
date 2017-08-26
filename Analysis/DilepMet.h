@@ -15,7 +15,8 @@ class DilepMet : public AnalyzerBase
   virtual bool Execute(SampleFormat& sample, const EventFormat& event);
 
  private:
-  double myEvent;
+  double myEvent, myElec, myMu;
+
 };
 }
 
