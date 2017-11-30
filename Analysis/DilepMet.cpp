@@ -8,13 +8,21 @@ using namespace std;
 // -----------------------------------------------------------------------------
 bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::string,std::string>& parameters)
 {
-  myEvent = 0;  
+  myEvent = myElec = myMu = 0;
   cout << "BEGIN Initialization" << endl; 
-  Manager()->AddRegionSelection("Z -> l l");
+  Manager()->AddRegionSelection("Z->ee,0j");
+  Manager()->AddRegionSelection("Z->mm,0j");
+  Manager()->AddRegionSelection("Z->ee,1j");
+  Manager()->AddRegionSelection("Z->mm,1j");
   
+  string Zee[] = {"Z->ee,1j", "Z->ee,0j"};
+  string Zmm[] = {"Z->mm,1j", "Z->mm,0j"};
+
   Manager()->AddCut("le 2");
   Manager()->AddCut("l*l < 0");
-  Manager()->AddCut("diel pt cut");
+  Manager()->AddCut("isEl", Zee);
+  Manager()->AddCut("isMu", Zmm);
+  Manager()->AddCut("diel pt cut", Zee);
   Manager()->AddCut("dilep mass");
   Manager()->AddCut("dilep pt > 60");
   Manager()->AddCut("jet veto");
@@ -25,11 +33,17 @@ bool DilepMet::Initialize(const MA5::Configuration& cfg, const std::map<std::str
   Manager()->AddCut("Met Cut");
   Manager()->AddCut("Dphi");
   Manager()->AddCut("Met Pt");
-  Manager()->AddCut("Jet Met");
-  Manager()->AddCut("dR(ll) < 1.8");
+
+  string Zll0j[] = {"Z->mm,0j", "Z->ee,0j"};
+  string Zll1j[] = {"Z->mm,1j", "Z->ee,1j"};
+  Manager()->AddCut("0 jet", Zll0j);
+  Manager()->AddCut("1 jet", Zll1j);
+
+  Manager()->AddCut("Jet Met", Zll1j);
+  Manager()->AddCut("dR(ll) < 1.8", Zll1j);
   
-  Manager()->AddHisto("Dilepton Pt",10,0,100, "Z -> l l");
-  Manager()->AddHisto("MET Drk M1",20,0,1000, "Z -> l l");
+  Manager()->AddHisto("Dilepton Pt",10,0,100);
+  Manager()->AddHisto("MET Drk M1",20,0,1000);
   cout << "END   Initialization" << endl;
   return true;
 }
@@ -82,13 +96,12 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
       if (eta < 1.48){ 
         if ((pt > 20) && (eta < 2.4) && (Riso < 0.077))
           selectElec.push_back(&elec);
-        if (pt > 10)
+        if ((pt > 10) && (Riso < 0.175))
           vetoElec.push_back(&elec);
-      }
-      if (eta > 1.48){
+      } else {
         if ((pt > 20) && (eta < 2.4) && (Riso < 0.068))
           selectElec.push_back(&elec);
-        if (pt > 10)
+        if ((pt > 10) && (eta < 2.4) && (Riso < 0.159))
           vetoElec.push_back(&elec);
       }
              
@@ -106,7 +119,7 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
 
       if ((pt > 20) && (eta < 2.4) && (Riso < 0.15))
         selectMu.push_back(&mu);
-      if (pt > 5) 
+      if ((pt > 5) && (eta < 2.4)) 
         vetoMu.push_back(&mu); 
     }
     
@@ -144,25 +157,24 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     SORTER->sort(selectElec, PTordering);
     SORTER->sort(selectMu, PTordering);
 
-
-
     // Multiple Muon 
     bool isElec;
     if (!Manager()->ApplyCut((selectElec.size() >= 2) || (selectMu.size() >= 2),"le 2")) return true;
-    if (selectElec.size() >= 2)  
+    if (selectElec.size() >= 2)
         isElec = true;
     else
-        isElec = false;  
+        isElec = false;
 
     // Opposite Charge
     const RecLeptonFormat &lep1 = isElec ? *selectElec[0] : *selectMu[0];
     const RecLeptonFormat &lep2 = isElec ? *selectElec[1] : *selectMu[1];
     if (!Manager()->ApplyCut(lep1.charge()*lep2.charge() < 0., "l*l < 0")) return true;
     
+    if (!Manager()->ApplyCut(isElec,"isEl")) return true;
+    if (!Manager()->ApplyCut(!isElec,"isMu")) return true;
+
     // Leading elec 
-    if (isElec){
-       if(!Manager()->ApplyCut(lep1.pt() > 25. && lep2.pt() > 20., "diel pt cut")) return true;
-    }
+    if(!Manager()->ApplyCut((lep1.pt() > 25.) && (lep2.pt() > 20.), "diel pt cut")) return true;
 
     // Dilep Cuts 
     auto dilep = lep1 + lep2;
@@ -194,22 +206,26 @@ bool DilepMet::Execute(SampleFormat& sample, const EventFormat& event)
     
     //Met - dilep.Pt 
     if (!Manager()->ApplyCut(fabs((MET - dilep.pt())/ dilep.pt()) < 0.4,"Met Pt")) return true;
+
+    if (!Manager()->ApplyCut(vetoJets.size() == 0,"0 jet")) return true;
+    if (!Manager()->ApplyCut(vetoJets.size() == 1,"1 jet")) return true;
     
-   //Single jet
+    //Single jet
     if (vetoJets.size() == 1){
-        auto jetPT = vetoJets[0];
-        auto Jetphi = jetPT->dphi_0_pi(pTmiss);
+      auto jetPT = vetoJets[0];
+      auto Jetphi = jetPT->dphi_0_pi(pTmiss);
         auto DRll = lep1.dr(lep2) ;
         if (!Manager()->ApplyCut(Jetphi > 0.5,"Jet Met")) return true;
         if (!Manager()->ApplyCut(DRll < 1.8, "dR(ll) < 1.8")) return true;
     }
+
     Manager()->FillHisto("Dilepton Pt",dilep.pt());
     Manager()->FillHisto("MET Drk M1", MET);
-    if (isElec){
-        myElec ++;
+    if (isElec) {
+      myElec ++;
+    } else {
+      myMu ++;
     }
-    else
-        myMu ++;
 
     myEvent ++;
   }

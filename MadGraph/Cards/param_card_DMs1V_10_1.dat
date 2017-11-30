@@ -34,9 +34,9 @@ Block mass
    15 1.777000e+00 # MTA 
    23 9.118760e+01 # MZ 
    25 1.250000e+02 # MH 
-  5000001 5.000000e+02 # MY1 
+  5000001 1.000000e+01 # MY1 
   5000511 1.000000e+01 # set of param :1*MXr, 1*MXc 
-  5000521 1.500000e+02 # MXd 
+  5000521 1.000000e+00 # MXd 
 ## Dependent parameters, given by model restrictions.
 ## Those values should be edited following the 
 ## analytical expression. MG5 ignores those values 

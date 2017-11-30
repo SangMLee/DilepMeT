@@ -18,7 +18,7 @@ Block ckmblock
 ## INFORMATION FOR DMINPUTS
 ###################################
 Block dminputs 
-    4 2.500000e-01 # set of param :1*gVd11, 1*gVu11, 1*gVd22, 1*gVu22, 1*gVd33, 1*gVu33 
+   13 2.500000e-01 # set of param :1*gAd11, 1*gAu11, 1*gAd22, 1*gAu22, 1*gAd33, 1*gAu33 
 
 ###################################
 ## INFORMATION FOR LOOP
@@ -101,8 +101,6 @@ DECAY  15 0.000000 # ta- : 0.0
 DECAY  16 0.000000 # vt : 0.0 
 DECAY  21 0.000000 # g : 0.0 
 DECAY  22 0.000000 # a : 0.0 
-DECAY  51 0.000000 # xc : 0.0 
-DECAY  52 0.000000 # xd : 0.0 
 DECAY  5000511 0.000000 # xr : 0.0 
 DECAY  5000512 0.000000 # xc : 0.0 
 DECAY  5000521 0.000000 # xd : 0.0 

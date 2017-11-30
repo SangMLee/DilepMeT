@@ -18,7 +18,31 @@ Block ckmblock
 ## INFORMATION FOR DMINPUTS
 ###################################
 Block dminputs 
-    4 2.500000e-01 # set of param :1*gVd11, 1*gVu11, 1*gVd22, 1*gVu22, 1*gVd33, 1*gVu33 
+    1 0.000000e+00 # gSXr 
+    2 0.000000e+00 # gSXc 
+    3 1.000000e+00 # gSXd 
+    4 0.000000e+00 # gPXd 
+    5 1.000000e+00 # gSd11 
+    6 1.000000e+00 # gSu11 
+    7 1.000000e+00 # gSd22 
+    8 1.000000e+00 # gSu22 
+    9 1.000000e+00 # gSd33 
+   10 1.000000e+00 # gSu33 
+   11 0.000000e+00 # gPd11 
+   12 0.000000e+00 # gPu11 
+   13 0.000000e+00 # gPd22 
+   14 0.000000e+00 # gPu22 
+   15 0.000000e+00 # gPd33 
+   16 0.000000e+00 # gPu33 
+   17 1.000000e+04 # Lambda 
+   18 0.000000e+00 # gSg 
+   19 0.000000e+00 # gPg 
+   20 1.000000e+00 # gSh1 
+   21 0.000000e+00 # gSh2 
+   22 1.000000e+00 # gSb 
+   23 0.000000e+00 # gPb 
+   24 0.000000e+00 # gSw 
+   25 0.000000e+00 # gPw 
 
 ###################################
 ## INFORMATION FOR LOOP
@@ -34,9 +58,10 @@ Block mass
    15 1.777000e+00 # MTA 
    23 9.118760e+01 # MZ 
    25 1.250000e+02 # MH 
-  5000001 5.000000e+02 # MY1 
-  5000511 1.000000e+01 # set of param :1*MXr, 1*MXc 
-  5000521 1.500000e+02 # MXd 
+   51 1.000000e+01 # MXc 
+   52 1.000000e+01 # MXd 
+   54 1.000000e+03 # MY0 
+  5000001 1.000000e+01 # MXr 
 ## Dependent parameters, given by model restrictions.
 ## Those values should be edited following the 
 ## analytical expression. MG5 ignores those values 
@@ -58,7 +83,6 @@ Block mass
   9000002 91.187600 # ghz : MZ 
   9000003 79.824360 # ghwp : MW 
   9000004 79.824360 # ghwm : MW 
-  5000512 10.000000 # xc : MXr 
 
 ###################################
 ## INFORMATION FOR SMINPUTS
@@ -82,7 +106,7 @@ DECAY   6 1.508336e+00 # WT
 DECAY  23 2.495200e+00 # WZ 
 DECAY  24 2.085000e+00 # WW 
 DECAY  25 4.070000e-03 # WH 
-DECAY 5000001 1.000000e+01 # WY1 
+DECAY  54 1.000000e+01 # WY0 
 ## Dependent parameters, given by model restrictions.
 ## Those values should be edited following the 
 ## analytical expression. MG5 ignores those values 
@@ -103,9 +127,7 @@ DECAY  21 0.000000 # g : 0.0
 DECAY  22 0.000000 # a : 0.0 
 DECAY  51 0.000000 # xc : 0.0 
 DECAY  52 0.000000 # xd : 0.0 
-DECAY  5000511 0.000000 # xr : 0.0 
-DECAY  5000512 0.000000 # xc : 0.0 
-DECAY  5000521 0.000000 # xd : 0.0 
+DECAY  5000001 0.000000 # xr : 0.0 
 DECAY  9000002 2.495200 # ghz : WZ 
 DECAY  9000003 2.085000 # ghwp : WW 
 DECAY  9000004 2.085000 # ghwm : WW 
@@ -113,23 +135,23 @@ DECAY  9000004 2.085000 # ghwm : WW
 # QUANTUM NUMBERS OF NEW STATE(S) (NON SM PDG CODE)
 #===========================================================
 
-Block QNUMBERS 5000511  # xr 
+Block QNUMBERS 5000001  # xr 
         1 0  # 3 times electric charge
         2 1  # number of spin states (2S+1)
         3 1  # colour rep (1: singlet, 3: triplet, 8: octet)
         4 0  # Particle/Antiparticle distinction (0=own anti)
-Block QNUMBERS 5000512  # xc 
+Block QNUMBERS 51  # xc 
         1 0  # 3 times electric charge
         2 1  # number of spin states (2S+1)
         3 1  # colour rep (1: singlet, 3: triplet, 8: octet)
         4 1  # Particle/Antiparticle distinction (0=own anti)
-Block QNUMBERS 5000521  # xd 
+Block QNUMBERS 52  # xd 
         1 0  # 3 times electric charge
         2 2  # number of spin states (2S+1)
         3 1  # colour rep (1: singlet, 3: triplet, 8: octet)
         4 1  # Particle/Antiparticle distinction (0=own anti)
-Block QNUMBERS 5000001  # y1 
+Block QNUMBERS 54  # y0 
         1 0  # 3 times electric charge
-        2 3  # number of spin states (2S+1)
+        2 1  # number of spin states (2S+1)
         3 1  # colour rep (1: singlet, 3: triplet, 8: octet)
         4 0  # Particle/Antiparticle distinction (0=own anti)
