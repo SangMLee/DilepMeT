@@ -1,6 +1,7 @@
 \documentclass[12pt,A4paper]{article}
 %\pdfoutput=1
 
+\usepackage{listing}
 \usepackage{multirow}
 \usepackage{cite}
 \usepackage{hyperref}
@@ -152,7 +153,162 @@ ightmark}\hfil	hepage}{	hepage\hfil}{}{}
 
 \section{INTRODUCTION}
 
+This concerns the analysis \href{http://cms-results.web.cern.ch/cms-results/public-results/preliminary-results/EXO-16-052/}{CMS-EXO-16-052} with a signature of two leptons and missing transverse energy (MET)at a center of mass energy of 13 TeV and with an integrated luminosity of 35.9 $\mathrm{fb}^{−1}$.
+A similar analysis was implemented for a smaller dataset, which can be found in \href{https://inspirehep.net/record/1618045/}{inspire record 1618045}.
+
+\section{Object definition}
+The following objects were defined:
+\begin{itemize}
+\item Electrons
+\begin{itemize}
+\item
+    pT $>$ 20 GeV, |eta| $<$ 2.4
+\item
+    Medium ID
+\item
+    PFiso04 $<$ 0.077 (barrel electrons) or PFiso04 $<$ 0.068) (endcap electrons) 
+\end{itemize}
+\item
+Muons
+\begin{itemize}
+\item
+    pT $>$ 20 GeV, |eta| $<$ 2.4
+\item
+    Tight ID (Loose ID for vetoing 3 leptons events)
+\item
+    PFiso04 $<$ 0.15 
+
+\item
+To get isolation:\\
+
+\begin{lstlisting}
+        double Riso = PHYSICS->Isol->eflow->relIsolation(el,event.rec(),0.4,0.,IsolationEFlow::ALL_COMPONENTS);
+\end{lstlisting}
+
+\end{itemize}
+\item
+Jets
+
+\begin{itemize}
+\item
+    pT $>$ 20 GeV, |eta| $<$ 5 (PFloose ID)
+\item
+    Identified leptons in {delta}R $<$ 0.4 disregarded
+\item
+    We categorize the selected events based on the number of selected jets with pT $>$ 30 GeV for the corresponding requirements 
+
+\end{itemize}
+\item
+b-jets
+
+\begin{itemize}
+\item
+    pT $>$ 20 GeV, |eta| $<$ 2.4
+\item
+    CSVv2$>$0.8484 (medium) 
+
+\end{itemize}
+\item
+Taus
+\begin{itemize}
+\item
+    pT $>$ 18 GeV, |eta| $<$ 2.3
+\item
+    DecayModeFinding? ?
+\item
+    Loose isolation $<$ 5 GeV 
+\end{itemize}
+\end{itemize}
+
+\section{Event Selection}
+
+\begin{itemize}
+\item
+    Two same flavored lepton with opposite electric charge ( that pass lepton selection?)
+\item
+    el[0] pt $>$ 25 and el[1] pt $>$20
+\item
+    mu[0] pt $>$ 20 and mu[1] pt $>$ 20
+\item
+    |dilep m - 91.1876( +- 0.0021)| $<$ 15
+\item
+    dilep pt $>$ 60 
+\item
+    events having more than one jet with pT $>$ 30 GeV - remove
+\item
+    b-tagged jet Veto : at least one bjet pt $>$ 20, |eta| $<$ 2.4, CSVv2 $<$ 0.8484 - remove
+\item
+    if el[2 onwards] pt $>$ 10 -remove
+\item
+    if mu[2 onwards] pt $>$ 5 -remove
+\item
+    tau veto: loose id, tau pt $>$ 18. (hadronically decaying tau leptons) 
+\end{itemize}
+
+\subsection{Optimization}
+
+    For each possible set of selections the full analysis, including the estimation of backgrounds from control samples in data and the systematic uncertainties, is repeated. After optimization:
+
+\begin{itemize}
+\item
+    MET $>$ 100
+\item
+    Delta phi ( dilep.pt , ptmiss) $>$ 2.6 rad
+\item
+    |MET - dilep.pt| / dilep.pt $<$ 0.4 
+\item
+If event has one jet:
+
+\begin{itemize}
+\item
+    Delta phi (jet.pt , ptmiss ) $>$ 0.5
+\item
+    Delta R(ll) $<$ 1.8 
+\end{itemize}
+\end{itemize}
+
 \section{SIMULATION DETAILS}
+Leading order samples were produced.
+The models used were:
+\begin{enumerate}
+\item
+dark matter production in a simplified model with a spin-1 mediator A
+\item
+dark matter production in a simplified model with a spin-0 mediator phi
+\end{enumerate}
+The MC generator program used was \texttt{MAD-GRAPH5\_aMC@NLO} 2.2.2; the shower program used was PYTHIA 8.205.
+The tune of Pythia used was CUETP8M1 and the coupling g(kai) is set to one.
+For 0.25 $<$ g(q) $<$ 1.0,
+the width ranges 1-5\% of the mediator mass for g(q) = 0.25,
+    30-50\% of the mediator mass for g(q) = 1.00
+
+Events for ADD extra-dimension scenario were produced at LO with an EFT implementaion in PYTHIA 8.
+The masses used were M(D) = 1, 2 and 3 TeV, each with n = 2, 3, 4, 5, 6, 7
+The events for the unparticle model were produced at LO, PYTHIA 8, tune CUETP8M1 assuming cutoff scale ㅅ(U) =15TeV
+We took ZH and gluon-gluon fusion as WZ and ZZ processes.
+
+To run MadGraph we used
+\begin{lstlisting}
+import DMsimp_s_spin0
+generate p p > xd xd~ z [QCD]
+add process p p > xd xd~ z j [QCD]
+output DM_spin0_noreallythistime
+launch
+\end{lstlisting}
+
+We turned on madspin and the showering. Then we fixed:
+\begin{lstlisting}
+madspin_card.dat -> set "z > l+ l-"
+\end{lstlisting}
+
+In the run card we set the number of events and changed shower to PYTHIA8, ickkw to 3 (FxFx? merging).
+In the shower card we set Qcut to 15 (50?) and njmax to 1 (since were generating 0 + 1 extra partons)
+In the parameter card we set the masses of Y0 (or Y1 for spin 1), the mediator, and Xd, the dark matter particle (the paper uses MY0=500, MXD=150GeV)
+
+Reference plots cut-flows came from \href{http://cms-results.web.cern.ch/cms-results/public-results/preliminary-results/EXO-16-052/CMS-PAS-EXO-16-052_Table_004.png}{table 4 on the CMS results page}.
+
+
+
 \begin{table}[htb]
 \centering
 \vspace{5pt}
